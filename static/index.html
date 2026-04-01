@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Tài Xỉu - Dự Đoán</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2em;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .sub {
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-refresh {
+            background: linear-gradient(135deg, #4ecdc4, #44b3aa);
+        }
+        
+        .btn-mock {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        /* Hai ô kết quả và dự đoán */
+        .double-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 30px;
+            padding: 30px 20px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .result-card h3 {
+            font-size: 1.2em;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        
+        .result-badge {
+            font-size: 4em;
+            font-weight: bold;
+            padding: 25px;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .result-tai {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            box-shadow: 0 0 30px rgba(255,107,107,0.5);
+        }
+        
+        .result-xiu {
+            background: linear-gradient(135deg, #4ecdc4, #44b3aa);
+            box-shadow: 0 0 30px rgba(78,205,196,0.5);
+        }
+        
+        .result-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .session-number {
+            font-size: 1em;
+            color: #aaa;
+        }
+        
+        .confidence {
+            font-size: 0.9em;
+            color: #ffd93d;
+            margin-top: 10px;
+        }
+        
+        /* Lịch sử */
+        .history-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+        }
+        
+        .history-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #aaa;
+            text-align: center;
+        }
+        
+        .history-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .history-item {
+            width: 65px;
+            padding: 10px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .history-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .history-tai {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .history-xiu {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .history-session {
+            font-size: 9px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .history-result {
+            font-size: 1.1em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        .error {
+            background: rgba(255,107,107,0.3);
+            border-left: 4px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .auto-status {
+            text-align: center;
+            font-size: 12px;
+            color: #4ecdc4;
+            margin-top: 20px;
+        }
+        
+        .history-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .history-grid::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .history-grid::-webkit-scrollbar-thumb {
+            background: #4ecdc4;
+            border-radius: 10px;
+        }
+        
+        @media (max-width: 700px) {
+            .double-panel {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .result-badge {
+                font-size: 3em;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎲 TÀI XỈU - DỰ ĐOÁN PHIÊN TIẾP THEO 🎲</h1>
+            <div class="sub">Tự động cập nhật | Dự đoán dựa trên 7 phương pháp</div>
+        </div>
+        
+        <div class="control-panel">
+            <button onclick="refreshData()" class="btn-refresh">🔄 Lấy dữ liệu mới</button>
+            <button onclick="generateMock()" class="btn-mock">🎲 Dữ liệu mẫu</button>
+            <button onclick="clearAllData()" class="btn-clear">🗑️ Xóa lịch sử</button>
+        </div>
+        
+        <!-- 2 ô: Kết quả hiện tại và Dự đoán -->
+        <div class="double-panel">
+            <!-- Kết quả hiện tại -->
+            <div class="result-card">
+                <h3>📌 KẾT QUẢ HIỆN TẠI</h3>
+                <div id="currentResult">
+                    <div class="loading">Đang tải...</div>
+                </div>
+            </div>
+            
+            <!-- Dự đoán phiên tiếp theo -->
+            <div class="result-card">
+                <h3>🔮 DỰ ĐOÁN PHIÊN TIẾP THEO</h3>
+                <div id="predictionResult">
+                    <div class="loading">Đang phân tích...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lịch sử -->
+        <div class="history-section">
+            <div class="history-title">📜 Lịch sử 30 phiên gần nhất</div>
+            <div class="history-grid" id="historyGrid">
+                <div class="loading">Chưa có dữ liệu</div>
+            </div>
+        </div>
+        
+        <div class="auto-status" id="autoStatus">
+            ⏰ Tự động cập nhật mỗi 30 giây
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let autoRefreshInterval = null;
+        
+        // Hiển thị kết quả hiện tại
+        function displayCurrentResult(data) {
+            const container = document.getElementById('currentResult');
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 2.5em;">❓</div>
+                        <div class="result-text">Chưa có dữ liệu</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const latest = data[0];
+            const resultClass = latest.result === 'tai' ? 'result-tai' : 'result-xiu';
+            const resultText = latest.result === 'tai' ? 'TÀI' : 'XỈU';
+            const resultIcon = latest.result === 'tai' ? '🔴' : '🔵';
+            
+            container.innerHTML = `
+                <div class="result-badge ${resultClass}">
+                    ${resultIcon} ${resultText} ${resultIcon}
+                </div>
+                <div class="result-text">Phiên ${latest.session || '???'}</div>
+                <div class="session-number">${latest.time ? latest.time.split(' ')[1] : ''}</div>
+            `;
+        }
+        
+        // Hiển thị dự đoán
+        function displayPrediction(prediction) {
+            const container = document.getElementById('predictionResult');
+            
+            if (!prediction || prediction.status === 'error') {
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 2.5em;">❓</div>
+                        <div class="result-text">Chưa đủ dữ liệu</div>
+                        <div class="session-number">Cần ít nhất 10 phiên</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (prediction.status === 'success') {
+                const resultClass = prediction.final_prediction === 'tai' ? 'result-tai' : 'result-xiu';
+                const resultText = prediction.final_prediction === 'tai' ? 'TÀI' : 'XỈU';
+                const resultIcon = prediction.final_prediction === 'tai' ? '🔴' : '🔵';
+                const confidence = prediction.final_confidence || 0;
+                
+                let confidenceColor = '#ffd93d';
+                let confidenceText = `${confidence}%`;
+                
+                if (confidence >= 70) confidenceColor = '#4ecdc4';
+                else if (confidence <= 40) confidenceColor = '#ff6b6b';
+                
+                container.innerHTML = `
+                    <div class="result-badge ${resultClass}">
+                        ${resultIcon} ${resultText} ${resultIcon}
+                    </div>
+                    <div class="result-text">Dự đoán phiên tiếp theo</div>
+                    <div class="confidence">📊 Độ tin cậy: <span style="color: ${confidenceColor};">${confidenceText}</span></div>
+                `;
+            } else if (prediction.status === 'warning') {
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 2.5em;">⚠️</div>
+                        <div class="result-text">${prediction.message || 'Chưa đủ dữ liệu'}</div>
+                        <div class="session-number">Cần thêm phiên để dự đoán chính xác</div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 2.5em;">❌</div>
+                        <div class="result-text">Lỗi dự đoán</div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Hiển thị lịch sử
+        function displayHistory(data) {
+            const grid = document.getElementById('historyGrid');
+            
+            if (!data || data.length === 0) {
+                grid.innerHTML = '<div class="loading">Chưa có dữ liệu</div>';
+                return;
+            }
+            
+            const recent = data.slice(0, 30);
+            
+            grid.innerHTML = recent.map(item => `
+                <div class="history-item ${item.result === 'tai' ? 'history-tai' : 'history-xiu'}">
+                    <div class="history-result">${item.result === 'tai' ? 'T' : 'X'}</div>
+                    <div class="history-session">${item.session || '?'}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Lấy dữ liệu lịch sử
+        async function fetchData() {
+            try {
+                const response = await fetch(`${API_BASE}/data/history?limit=50`);
+                const data = await response.json();
+                
+                if (data.status === 'success' && data.data) {
+                    displayCurrentResult(data.data);
+                    displayHistory(data.data);
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+        
+        // Lấy dự đoán
+        async function fetchPrediction() {
+            try {
+                const response = await fetch(`${API_BASE}/predict`);
+                const data = await response.json();
+                displayPrediction(data);
+            } catch (error) {
+                console.error('Lỗi dự đoán:', error);
+                displayPrediction({ status: 'error' });
+            }
+        }
+        
+        // Lấy dữ liệu mới từ API
+        async function fetchNewData() {
+            try {
+                const response = await fetch(`${API_BASE}/data/fetch`, { method: 'POST' });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    await fetchData();
+                    await fetchPrediction();
+                }
+            } catch (error) {
+                console.error('Lỗi fetch API:', error);
+            }
+        }
+        
+        // Tạo dữ liệu mẫu
+        async function generateMock() {
+            try {
+                const response = await fetch(`${API_BASE}/data/mock`, { method: 'POST' });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    await fetchData();
+                    await fetchPrediction();
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        }
+        
+        // Xóa dữ liệu
+        async function clearAllData() {
+            if (!confirm('⚠️ Xóa toàn bộ lịch sử?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/data/delete`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ confirm: true })
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    await fetchData();
+                    await fetchPrediction();
+                }
+            } catch (error) {
+                console.error('Lỗi xóa:', error);
+            }
+        }
+        
+        // Làm mới toàn bộ
+        async function refreshData() {
+            await fetchNewData();
+        }
+        
+        // Tự động cập nhật
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => {
+                fetchNewData();
+            }, 30000);
+        }
+        
+        // Khởi tạo
+        window.onload = () => {
+            fetchData();
+            fetchPrediction();
+            startAutoRefresh();
+        };
+    </script>
+</body>
+</html>
